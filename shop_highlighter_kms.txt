@@ -1,0 +1,144 @@
+// ==UserScript==
+// @name         Restocking Profit Highlighter (Magic Shop)
+// @namespace    http://www.jellyneo.com
+// @version      1.0
+// @description  Automatically highlights profitable items in Neopets stores.
+// @author       MediaTriggerWords, ayyylmao, modified by Astralruby on Jellyneo
+// @match        https://www.neopets.com/objects.phtml?type=shop&obj_type=2
+// @grant        none
+// ==/UserScript==
+
+(function() {
+
+    var patterns = [], classes = [];
+
+    /*    The following define the classes of words.  If the first
+    character of the specification is "=", the match will be
+    case-sensitive, otherwise it will be case-insensitive.
+    The specification is a regular expression, and should
+    contain metacharacters to handle variant spellings and
+    plurals.  Any grouping within these patterns *must* be done
+    with a (?: ... ) specification to avoid messing up the
+    capture from the text string.
+
+    You may add additional categories as you wish, but be sure to
+    declare their rendering in the style definition below.  */
+
+    //    Rendering styles for our various word classes
+
+    addGlobalStyle('span.red { background-color: #000000; color: #ff1a00; } ' +
+           'span.yellow { background-color: #000000; color: #fdff00;} ' +
+           'span.green { background-color: #000000; color: #23ea11;} ' +
+                 'span.blue { background-color: #000000; color: #01fcfc} ' );
+
+    // RED items. Items in this list will appear as red on black
+
+    defwords(["Potion of Pestilence", "Red Poogle Morphing Potion", "Golden Elephante Morphing Potion", "Orange Koi Morphing Potion", "Blue Xweetok Morphing Potion", "Strawberry Wocky Morphing Potion", "Green Kyrii Morphing Potion", "Vial of Vile"],
+    "red");
+
+    //    YELLOW words. These items are black background with yellow text.
+
+    defwords(["Yellow Mynci Morphing Potion", "Blue Mynci Morphing Potion", "Split Grarrl Morphing Potion", "Spotted Eyrie Morphing Potion", "Camouflage Tuskaninny Morphing Potion", "Rainbow Tuskaninny Morphing Potion", "Camouflage Wocky Morphing Potion", "Spotted Grarrl Morphing Potion", "Blue JubJub Morphing Potion", "Blue Eyrie Morphing Potion", "Tyrannian Ogrin Morphing Potion", "Brown Techo Morphing Potion", "Red Hissi Morphing Potion", "Starry Tuskaninny Morphing Potion", "Blue Moehog Morphing Potion", "Christmas Ixi Morphing Potion", "Orange Tuskaninny Morphing Potion", "Yellow Flotsam Morphing Potion", "Electric Tuskaninny Morphing Potion", "Yellow Tuskaninny Morphing Potion", "Christmas Ogrin Morphing Potion", "Starry Techo Morphing Potion", "Yellow Uni Morphing Potion", "Red JubJub Morphing Potion", "Blue Kyrii Morphing Potion", "Christmas Elephante Morphing Potion", "Yellow Eyrie Morphing Potion", "Yellow JubJub Morphing Potion", "Red Xweetok Morphing Potion", "Green Eyrie Morphing Potion", "Camouflage Techo Morphing Potion", "Red Uni Morphing Potion", "Zombie Blumaroo Morphing Potion", "Speckled Moehog Morphing Potion", "Checkered Techo Morphing Potion", "Ice Hissi Morphing Potion", "Yellow Xweetok Morphing Potion", "Illusen Day Elixir", "Slorg Slime", "Green Xweetok Morphing Potion", "Green Elephante Morphing Potion", "Brown Moehog Morphing Potion", "Ghost Buzz Morphing Potion", "Red Tuskaninny Morphing Potion", "Bloodberry Elixir", "Green Uni Morphing Potion"],
+    "yellow");
+
+    //    GREEN words. Black background, green text.
+
+    defwords(["Blue Blumaroo Morphing Potion", "Blue Lenny Morphing Potion", "Blue Skeith Morphing Potion", "Christmas Blumaroo Morphing Potion", "Cloud Shoyru Morphing Potion", "Fire Bori Morphing Potion", "Fire Skeith Morphing Potion", "Fire Wocky Morphing Potion", "Ghost Peophin Morphing Potion", "Green Quiggle Morphing Potion", "Island Peophin Morphing Potion", "Plushie Tonu Morphing Potion", "Purple Peophin Morphing Potion", "Red Skeith Morphing Potion", "Starry Grundo Morphing Potion", "White Peophin Morphing Potion", "Yellow Grundo Morphing Potion", "Yellow Skeith Morphing Potion", "Christmas Bori Morphing Potion", "Christmas Grundo Morphing Potion", "Cloud Lenny Morphing Potion", "Desert Grundo Morphing Potion", "Disco Moehog Morphing Potion", "Eventide Ixi Morphing Potion", "Island Tuskaninny Morphing Potion", "Red Peophin Morphing Potion", "White Shoyru Morphing Potion", "Woodland Peophin Morphing Potion", "Christmas Korbat Morphing Potion", "Fire Shoyru Morphing Potion", "Red Bori Morphing Potion", "Red Korbat Morphing Potion", "Spotted Grundo Morphing Potion", "Wraith Bruce Morphing Potion", "Yellow Korbat Morphing Potion", "Green Bori Morphing Potion", "Woodland Grundo Morphing Potion", "Blue Bori Morphing Potion", "Desert Scorchio Morphing Potion", "Pink Shoyru Morphing Potion", "Shadow Skeith Morphing Potion", "Faerie Nimmo Morphing Potion", "Island Blumaroo Morphing Potion", "Red Blumaroo Morphing Potion", "Yellow Poogle Morphing Potion", "Blue Ixi Morphing Potion", "Disco Mynci Morphing Potion", "Plushie Mynci Morphing Potion", "Silver Shoyru Morphing Potion", "Striped Ixi Morphing Potion", "Christmas Bruce Morphing Potion", "Eventide Tonu Morphing Potion", "Red Shoyru Morphing Potion", "Island Ogrin Morphing Potion", "Pirate Grundo Morphing Potion", "Pirate Shoyru Morphing Potion", "Snow Blumaroo Morphing Potion", "Zombie Aisha Morphing Potion", "Zombie Korbat Morphing Potion", "Transparent Wocky Morphing Potion", "Baby Blumaroo Morphing Potion", "Green Peophin Morphing Potion", "Snow Bruce Morphing Potion", "Yellow Bruce Morphing Potion", "Blue Peophin Morphing Potion", "Cloud Grundo Morphing Potion", "Ghost Grarrl Morphing Potion", "Purple Shoyru Morphing Potion", "Ghost Lenny Morphing Potion", "Gold Shoyru Morphing Potion", "Red Nimmo Morphing Potion", "Cloud Peophin Morphing Potion", "Island Mynci Morphing Potion", "Baby Peophin Morphing Potion", "Water Gnorbu Morphing Potion", "Yellow Peophin Morphing Potion", "Brown Grundo Morphing Potion", "Speckled Bruce Morphing Potion", "Tyrannian JubJub Morphing Potion", "Christmas Shoyru Morphing Potion", "Silver Peophin Morphing Potion", "Brown Uni Morphing Potion", "Faerie Uni Morphing Potion", "Island Shoyru Morphing Potion", "Purple Tonu Morphing Potion", "Rainbow Wocky Morphing Potion", "Shadow Shoyru Morphing Potion", "Desert Peophin Morphing Potion", "Blue Grundo Morphing Potion", "Speckled Shoyru Morphing Potion", "Tyrannian Gnorbu Morphing Potion", "Purple Poogle Morphing Potion", "Shadow Korbat Morphing Potion", "Blue Wocky Morphing Potion", "Dimensional Shoyru Morphing Potion", "Pirate Wocky Morphing Potion", "Blue Bruce Morphing Potion", "Blue Poogle Morphing Potion", "Checkered Bori Morphing Potion", "Pink Peophin Morphing Potion", "Island Aisha Morphing Potion", "Christmas Peophin Morphing Potion", "Rainbow Shoyru Morphing Potion", "Brown Aisha Morphing Potion", "Pink Pteri Morphing Potion", "Pink Uni Morphing Potion", "Sketch Peophin Morphing Potion", "Checkered Shoyru Morphing Potion", "Spotted Shoyru Morphing Potion", "Ghost Korbat Morphing Potion", "Starry Bori Morphing Potion", "Plushie JubJub Morphing Potion", "Eventide Korbat Morphing Potion", "Green Shoyru Morphing Potion", "Island Eyrie Morphing Potion", "Island Korbat Morphing Potion", "Island Techo Morphing Potion", "Pirate Poogle Morphing Potion", "Faerie Tuskaninny Morphing Potion", "Ghost Techo Morphing Potion", "Green Korbat Morphing Potion", "Island Lenny Morphing Potion", "Pink Korbat Morphing Potion", "Tyrannian Ixi Morphing Potion", "Snow Eyrie Morphing Potion", "Yellow Quiggle Morphing Potion", "Island Xweetok Morphing Potion", "Pirate Pteri Morphing Potion", "Striped Korbat Morphing Potion", "Camouflage Shoyru Morphing Potion", "Light Faerie Dust", "Striped Meerca Morphing Potion", "Pirate Gnorbu Morphing Potion", "Fire Gnorbu Morphing Potion", "Island Koi Morphing Potion", "Purple Eyrie Morphing Potion", "Pirate Ixi Morphing Potion", "Red Quiggle Morphing Potion", "Speckled Bori Morphing Potion", "Cloud Scorchio Morphing Potion", "Woodland Lenny Morphing Potion", "Rainbow Koi Morphing Potion", "Green Flotsam Morphing Potion", "Halloween Tonu Morphing Potion", "Pirate Bori Morphing Potion", "Striped Scorchio Morphing Potion", "Spotted Bori Morphing Potion", "Cloud Eyrie Morphing Potion", "Yellow Blumaroo Morphing Potion", "Swamp Gas Techo Morphing Potion", "Starry Hissi Morphing Potion", "Starry Shoyru Morphing Potion", "Pirate Lenny Morphing Potion", "Yellow Ixi Morphing Potion", "Yellow Shoyru Morphing Potion", "Camouflage Scorchio Morphing Potion", "Fire Moehog Morphing Potion", "Fire Nimmo Morphing Potion", "Baby Poogle Morphing Potion", "Dimensional Poogle Morphing Potion", "Skunk Buzz Morphing Potion", "Swamp Gas Ogrin Morphing Potion", "Water Kyrii Morphing Potion", "Camouflage Meerca Morphing Potion", "Red Lenny Morphing Potion", "Snow Aisha Morphing Potion", "Purple Uni Morphing Potion", "Rainbow Bori Morphing Potion", "Striped Nimmo Morphing Potion", "Water Flotsam Morphing Potion", "Yellow Buzz Morphing Potion", "Rainbow Uni Morphing Potion", "Yellow Wocky Morphing Potion", "Water Buzz Morphing Potion", "Checkered Aisha Morphing Potion", "Ghost Elephante Morphing Potion", "Green Lenny Morphing Potion", "Island Nimmo Morphing Potion", "Pink Kyrii Morphing Potion", "Checkered Poogle Morphing Potion", "Faerie Mynci Morphing Potion", "Christmas Uni Morphing Potion", "Green Wocky Morphing Potion", "Snow Techo Morphing Potion", "Zombie Eyrie Morphing Potion", "Starry Nimmo Morphing Potion", "Striped Aisha Morphing Potion", "Red Eyrie Morphing Potion", "Flaming Torch", "Cloud Elephante Morphing Potion", "Faerie Buzz Morphing Potion", "Faerie Eyrie Morphing Potion", "Red Wocky Morphing Potion", "Tyrannian Flotsam Morphing Potion", "Zombie Buzz Morphing Potion", "Island Buzz Morphing Potion", "Yellow Lenny Morphing Potion", "Rainbow Poogle Morphing Potion", "White Kyrii Morphing Potion", "Red Koi Morphing Potion", "Christmas Lenny Morphing Potion", "Blue Uni Morphing Potion", "Faerie Flotsam Morphing Potion", "Skunk Kyrii Morphing Potion", "Spotted Nimmo Morphing Potion", "Tyrannian Eyrie Morphing Potion", "Yellow Aisha Morphing Potion", "Camouflage Lenny Morphing Potion", "Green Nimmo Morphing Potion", "Christmas Magic Hat", "Dimensional Moehog Morphing Potion", "Pink Ogrin Morphing Potion", "Tyrannian Nimmo Morphing Potion", "Blue Nimmo Morphing Potion", "Green Koi Morphing Potion", "Faerie Krawk Morphing Potion", "Pink Eyrie Morphing Potion", "Fire Aisha Morphing Potion", "Blue Koi Morphing Potion", "Fire Buzz Morphing Potion", "Skunk Flotsam Morphing Potion", "Christmas Gnorbu Morphing Potion", "Cloud Poogle Morphing Potion", "Brown Lenny Morphing Potion", "Snow Ogrin Morphing Potion", "Snowy Flotsam Morphing Potion", "Pirate Krawk Morphing Potion", "Spotted Blumaroo Morphing Potion", "Electric Grarrl Morphing Potion", "Eventide Lenny Morphing Potion", "Rainbow Kyrii Morphing Potion", "Desert Kyrii Morphing Potion", "Purple Aisha Morphing Potion", "Yellow Moehog Morphing Potion", "Blue Meerca Morphing Potion", "Pirate Hissi Morphing Potion", "Red Aisha Morphing Potion", "Split Lenny Morphing Potion", "Starry Uni Morphing Potion", "Striped Blumaroo Morphing Potion", "Striped Grarrl Morphing Potion", "Desert Gnorbu Morphing Potion", "Yellow Grarrl Morphing Potion", "Pink Koi Morphing Potion", "Green Aisha Morphing Potion", "Desert Ogrin Morphing Potion", "White Flotsam Morphing Potion", "Christmas Wocky Morphing Potion", "Red Elephante Morphing Potion", "Chomby Staff", "Blue Tuskaninny Morphing Potion", "Fire Techo Morphing Potion", "Zombie JubJub Morphing Potion", "Fire Ogrin Morphing Potion", "White Grarrl Morphing Potion", "Yellow Kyrii Morphing Potion", "Pirate Draik Morphing Potion", "Starry Wocky Morphing Potion", "Striped Flotsam Morphing Potion", "Christmas Koi Morphing Potion", "Red Techo Morphing Potion", "Blue Grarrl Morphing Potion", "Yellow Koi Morphing Potion", "Starry Flotsam Morphing Potion", "Spotted Flotsam Morphing Potion", "Fire Poogle Morphing Potion", "Red Kyrii Morphing Potion", "Skunk Mynci Morphing Potion", "Blue Buzz Morphing Potion", "Blue Hissi Morphing Potion", "Starry Koi Morphing Potion", "8-bit Power-Up Potion", "Fire Tuskaninny Morphing Potion", "Green Grarrl Morphing Potion", "Red Flotsam Morphing Potion", "Red Mynci Morphing Potion", "Rainbow Ogrin Morphing Potion", "Glowing Koi Morphing Potion", "Rainbow Grarrl Morphing Potion", "Blue Aisha Morphing Potion", "Glowing Poogle Morphing Potion", "Zombie Flotsam Morphing Potion", "Ghost Tuskaninny Morphing Potion", "Speckled Xweetok Morphing Potion", "Yellow Techo Morphing Potion", "Camouflage JubJub Morphing Potion", "Plushie Poogle Morphing Potion", "Checkered Koi Morphing Potion", "Green Tuskaninny Morphing Potion", "Pirate Ogrin Morphing Potion", "Green Hissi Morphing Potion", "Blue Elephante Morphing Potion", "Green JubJub Morphing Potion", "Red Grarrl Morphing Potion", "Yellow Elephante Morphing Potion", "Fire Grarrl Morphing Potion", "Blue Techo Morphing Potion", "Green Techo Morphing Potion", "Green Moehog Morphing Potion", "Strawberry Mynci Morphing Potion"],
+    "green");
+
+        //    BLUE words. Black background, blue text.
+
+    defwords(["Desert Lutari Morphing Potion", "Grey Cybunny Morphing Potion", "Plushie Cybunny Morphing Potion", "Maraquan Cybunny Morphing Potion", "Faerie Lutari Morphing Potion", "Island Lutari Morphing Potion", "Cloud Cybunny Morphing Potion", "Green Lutari Morphing Potion", "Pirate Lutari Morphing Potion", "Maraquan Kacheek Morphing Potion", "Zombie Mynci Morphing Potion", "Speckled Cybunny Morphing Potion", "Faerie Shoyru Morphing Potion", "Faerie Ixi Morphing Potion", "Grey Draik Morphing Potion", "Maraquan Krawk Morphing Potion", "Pink Lutari Morphing Potion", "Plushie Aisha Morphing Potion", "Maraquan Usul Morphing Potion", "Plushie Grundo Morphing Potion", "Halloween Cybunny Morphing Potion", "Kauvaras Potion", "Maraquan Gelert Morphing Potion", "Plushie Bruce Morphing Potion", "Plushie Skeith Morphing Potion", "Grey Ixi Morphing Potion", "Blue Cybunny Morphing Potion", "Darigan Draik Morphing Potion", "Faerie Lupe Morphing Potion", "Faerie Poogle Morphing Potion", "Island Cybunny Morphing Potion", "Plushie Chomby Morphing Potion", "Plushie Hissi Morphing Potion", "Plushie Jetsam Morphing Potion", "Rainbow Cybunny Morphing Potion", "Red Kacheek Morphing Potion", "Split Lupe Morphing Potion", "Stealthy Krawk Morphing Potion", "Strange Potion", "Wraith Draik Morphing Potion", "Royal Girl Kyrii Morphing Potion", "Faerie Draik Morphing Potion", "Blue Kacheek Morphing Potion", "Faerie Grundo Morphing Potion", "Faerie Peophin Morphing Potion", "Glowing Jetsam Morphing Potion", "Maraquan Acara Morphing Potion", "Maraquan Ixi Morphing Potion", "Plushie Kougra Morphing Potion", "Yellow Kacheek Morphing Potion", "Wraith Krawk Morphing Potion", "Plushie Bori Morphing Potion", "Plushie Korbat Morphing Potion", "Stealthy Blumaroo Morphing Potion", "Baby Draik Morphing Potion", "Disco Kacheek Morphing Potion", "Faerie Bori Morphing Potion", "Faerie Ruki Morphing Potion", "Grey Yurble Morphing Potion", "Halloween Hissi Morphing Potion", "Maraquan Grarrl Morphing Potion", "Maraquan Meerca Morphing Potion", "Plushie Usul Morphing Potion", "Royal Boy Kyrii Morphing Potion", "Spotted Jetsam Morphing Potion", "Striped Jetsam Morphing Potion", "Faerie Meerca Morphing Potion", "Plushie Kiko Morphing Potion", "Faerie Xweetok Morphing Potion", "Grey Techo Morphing Potion", "Maraquan Korbat Morphing Potion", "Maraquan Mynci Morphing Potion", "Plushie Grarrl Morphing Potion", "Purple Draik Morphing Potion", "White Xweetok Morphing Potion", "Wraith Grundo Morphing Potion", "Desert Krawk Morphing Potion", "Halloween Uni Morphing Potion", "Maractite Hissi Morphing Potion", "Pastel Xweetok Morphing Potion", "Spotted Gelert Morphing Potion", "Spotted Hissi Morphing Potion", "Spotted Kau Morphing Potion", "Wraith Shoyru Morphing Potion", "Baby Aisha Morphing Potion", "Baby Buzz Morphing Potion", "Baby Chomby Morphing Potion", "Baby Jetsam Morphing Potion", "Baby Kacheek Morphing Potion", "Baby Kau Morphing Potion", "Baby Kougra Morphing Potion", "Darigan Kau Morphing Potion", "Desert Aisha Morphing Potion", "Desert Kacheek Morphing Potion", "Desert Poogle Morphing Potion", "Faerie Pteri Morphing Potion", "Fire Kacheek Morphing Potion", "Ghost Gelert Morphing Potion", "Green Kacheek Morphing Potion", "Grey JubJub Morphing Potion", "Grey Korbat Morphing Potion", "Grey Mynci Morphing Potion", "Halloween Aisha Morphing Potion", "Halloween Grundo Morphing Potion", "Halloween Kau Morphing Potion", "Invisible Wocky Morphing Potion", "Pink Draik Morphing Potion", "Pirate Kacheek Morphing Potion", "Plushie Ixi Morphing Potion", "Purple Chia Morphing Potion", "Relic Chia Morphing Potion", "Snow Chia Morphing Potion", "Spotted Kougra Morphing Potion", "Starry Kacheek Morphing Potion", "Stealthy Kyrii Morphing Potion", "Transparent Korbat Morphing Potion", "Woodland Uni Morphing Potion", "Wraith Gelert Morphing Potion", "Rainbow Kacheek Morphing Potion", "Christmas Kacheek Morphing Potion", "Striped Kau Morphing Potion", "Faerie Kau Morphing Potion", "Blue Draik Morphing Potion", "Faerie Hissi Morphing Potion", "Fire Blumaroo Morphing Potion", "Fire Chomby Morphing Potion", "Green Chia Morphing Potion", "Island Hissi Morphing Potion", "Baby Hissi Morphing Potion", "Brown Ixi Morphing Potion", "Christmas Gelert Morphing Potion", "Darigan Acara Morphing Potion", "Darigan Wocky Morphing Potion", "Desert Blumaroo Morphing Potion", "Faerie Acara Morphing Potion", "Faerie Lenny Morphing Potion", "Green Draik Morphing Potion", "Green Jetsam Morphing Potion", "Green Kau Morphing Potion", "Maractite Draik Morphing Potion", "Maractite Krawk Morphing Potion", "Pink Lenny Morphing Potion", "Plushie Ogrin Morphing Potion", "Rainbow Swirly Potion", "Red Kau Morphing Potion", "Speckled Kau Morphing Potion", "Starry Kau Morphing Potion", "White Chomby Morphing Potion", "White Ixi Morphing Potion", "Yellow Kau Morphing Potion", "Water Kau Morphing Potion", "Island Gelert Morphing Potion", "White Chia Morphing Potion", "Woodland Draik Morphing Potion", "Baby Chia Morphing Potion", "Baby Gnorbu Morphing Potion", "Baby JubJub Morphing Potion", "Baby Kiko Morphing Potion", "Baby Meerca Morphing Potion", "Baby Scorchio Morphing Potion", "Baby Usul Morphing Potion", "Blue Chia Morphing Potion", "Blue Chomby Morphing Potion", "Blue Gelert Morphing Potion", "Blue Kau Morphing Potion", "Blue Usul Morphing Potion", "Blue Zafara Morphing Potion", "Camouflage Chia Morphing Potion", "Camouflage Krawk Morphing Potion", "Checkered Kiko Morphing Potion", "Christmas Chia Morphing Potion", "Christmas Chomby Morphing Potion", "Christmas Kiko Morphing Potion", "Cloud Gelert Morphing Potion", "Darigan Aisha Morphing Potion", "Darigan Blumaroo Morphing Potion", "Darigan Grarrl Morphing Potion", "Darigan Grundo Morphing Potion", "Darigan Ixi Morphing Potion", "Desert Chomby Morphing Potion", "Desert Hissi Morphing Potion", "Desert Ixi Morphing Potion", "Dimensional Aisha Morphing Potion", "Disco Chomby Morphing Potion", "Eventide Draik Morphing Potion", "Eventide Gelert Morphing Potion", "Eventide Hissi Morphing Potion", "Faerie Blumaroo Morphing Potion", "Faerie Bruce Morphing Potion", "Faerie Techo Morphing Potion", "Faerie Usul Morphing Potion", "Faerie Yurble Morphing Potion", "Fire Chia Morphing Potion", "Fire Draik Morphing Potion", "Fire Ixi Morphing Potion", "Fire Kau Morphing Potion", "Ghost Hissi Morphing Potion", "Green Gelert Morphing Potion", "Green Krawk Morphing Potion", "Green Usul Morphing Potion", "Green Zafara Morphing Potion", "Grey Grarrl Morphing Potion", "Halloween Blumaroo Morphing Potion", "Halloween Chia Morphing Potion", "Halloween Grarrl Morphing Potion", "Halloween Ixi Morphing Potion", "Halloween Xweetok Morphing Potion", "Island Bori Morphing Potion", "Island Bruce Morphing Potion", "Island Krawk Morphing Potion", "Island Uni Morphing Potion", "Island Usul Morphing Potion", "Maractite Peophin Morphing Potion", "Pink Ruki Morphing Potion", "Pirate Chomby Morphing Potion", "Plushie Tuskaninny Morphing Potion", "Rainbow Chomby Morphing Potion", "Rainbow Hissi Morphing Potion", "Rainbow Kau Morphing Potion", "Red Chia Morphing Potion", "Red Chomby Morphing Potion", "Red Gelert Morphing Potion", "Red Usul Morphing Potion", "Shadow Blumaroo Morphing Potion", "Shadow Chomby Morphing Potion", "Shadow Hissi Morphing Potion", "Shadow Lenny Morphing Potion", "Shadow Peophin Morphing Potion", "Shadow Ruki Morphing Potion", "Split Chia Morphing Potion", "Spotted Koi Morphing Potion", "Starry Draik Morphing Potion", "Stealthy Grarrl Morphing Potion", "Stealthy Techo Morphing Potion", "Transparent Skeith Morphing Potion", "Water Acara Morphing Potion", "Woodland Bori Morphing Potion", "Woodland Koi Morphing Potion", "Woodland Mynci Morphing Potion", "Woodland Tonu Morphing Potion", "Woodland Wocky Morphing Potion", "Wraith Ogrin Morphing Potion", "Wraith Pteri Morphing Potion", "Wraith Scorchio Morphing Potion", "Yellow Chia Morphing Potion", "Yellow Chomby Morphing Potion", "Yellow Gelert Morphing Potion", "Yellow Lupe Morphing Potion", "Baby Uni Morphing Potion", "Blue Krawk Morphing Potion", "Halloween Kyrii Morphing Potion", "Island JubJub Morphing Potion", "Island Quiggle Morphing Potion", "Baby Bruce Morphing Potion", "Darigan Mynci Morphing Potion", "Darigan Techo Morphing Potion", "Faerie Aisha Morphing Potion", "Ghost Draik Morphing Potion", "Ghost Kiko Morphing Potion", "Halloween Bori Morphing Potion", "Halloween Eyrie Morphing Potion", "Island Grundo Morphing Potion", "Pirate Usul Morphing Potion", "Rainbow JubJub Morphing Potion", "Striped Shoyru Morphing Potion", "Transparent Elephante Morphing Potion", "Tyrannian Bori Morphing Potion", "Water Usul Morphing Potion", "Yellow Draik Morphing Potion", "Yellow Krawk Morphing Potion", "Fire Kiko Morphing Potion", "Water Draik Morphing Potion", "Darigan Buzz Morphing Potion", "Electric Ixi Morphing Potion", "Grey Lenny Morphing Potion", "Halloween Korbat Morphing Potion", "Island Chomby Morphing Potion", "Island Kiko Morphing Potion", "Island Zafara Morphing Potion", "Red Ixi Morphing Potion", "Eventide Kougra Morphing Potion", "Purple Zafara Morphing Potion", "Baby Shoyru Morphing Potion", "Blue Kiko Morphing Potion", "Blue Shoyru Morphing Potion", "Brown Bruce Morphing Potion", "Brown Ruki Morphing Potion", "Checkered Acara Morphing Potion", "Christmas Acara Morphing Potion", "Cloud Acara Morphing Potion", "Cloud Ruki Morphing Potion", "Darigan Bori Morphing Potion", "Darigan Eyrie Morphing Potion", "Darigan Kyrii Morphing Potion", "Desert Flotsam Morphing Potion", "Disco Bruce Morphing Potion", "Eventide Poogle Morphing Potion", "Fire Acara Morphing Potion", "Ghost Acara Morphing Potion", "Green Chomby Morphing Potion", "Green Ruki Morphing Potion", "Green Skeith Morphing Potion", "Halloween Meerca Morphing Potion", "Halloween Techo Morphing Potion", "Island Ixi Morphing Potion", "Island Skeith Morphing Potion", "Maractite Aisha Morphing Potion", "Maraquan Buzz Morphing Potion", "Polkadot Tonu Morphing Potion", "Rainbow Grundo Morphing Potion", "Red Acara Morphing Potion", "Red Kiko Morphing Potion", "Red Zafara Morphing Potion", "Skunk Draik Morphing Potion", "Snow Bori Morphing Potion", "Snow Peophin Morphing Potion", "Snow Usul Morphing Potion", "Striped Skeith Morphing Potion", "Striped Xweetok Morphing Potion", "Transparent Lenny Morphing Potion", "Woodland Skeith Morphing Potion", "Yellow Acara Morphing Potion", "Yellow Kiko Morphing Potion", "Yellow Usul Morphing Potion", "Baby Koi Morphing Potion", "Baby Korbat Morphing Potion", "Christmas Kougra Morphing Potion", "Desert Yurble Morphing Potion", "Disco Acara Morphing Potion", "Faerie Quiggle Morphing Potion", "Halloween Lenny Morphing Potion", "Halloween Nimmo Morphing Potion", "Red Draik Morphing Potion", "Red Krawk Morphing Potion", "Woodland Acara Morphing Potion", "Cloud Bori Morphing Potion", "Eventide Aisha Morphing Potion", "Green Kiko Morphing Potion", "Island Poogle Morphing Potion", "Plushie Flotsam Morphing Potion", "Starry Usul Morphing Potion", "Yellow Hissi Morphing Potion", "Blue Ruki Morphing Potion", "Desert Mynci Morphing Potion", "Fire Ruki Morphing Potion", "Fire Xweetok Morphing Potion", "Fire Yurble Morphing Potion", "Green Ixi Morphing Potion", "Pirate Yurble Morphing Potion", "Plushie Pteri Morphing Potion", "Rainbow Flotsam Morphing Potion", "Ghost Shoyru Morphing Potion", "Island Wocky Morphing Potion", "Pastel Gnorbu Morphing Potion"],
+    "blue");
+
+    //    Add one or more words to the dictionary with a specified class
+
+    function defwords(words, which_class) {
+    for (var i = 0; i < words.length; i++) {
+        var w = words[i].replace(/^=/, "");
+        patterns.push(new RegExp("([^a-zA-Z])(" + w + ")([^a-zA-Z])",
+        words[i].match(/^=/) ? "g" : "gi"));
+        classes.push(which_class);
+    }
+    }
+
+    //    Quote HTML metacharacters in body text
+
+    function quoteHTML(s) {
+    s = s.replace(/&/g, "&amp;");
+    s = s.replace(/</g, "&lt;");
+    s = s.replace(/>/g, "&gt;");
+    return s;
+    }
+
+    //    Add one or more CSS style rules to the document
+
+    function addGlobalStyle(css) {
+    var head, style;
+    head = document.getElementsByTagName('head')[0];
+    if (!head) {
+        return;
+    }
+    style = document.createElement('style');
+    style.type = 'text/css';
+    style.innerHTML = css;
+    head.appendChild(style);
+    }
+
+    //    Apply highlighting replacements to a text sequence
+
+    var curpat;             // Hidden argument to repmatch()
+    var changes;            // Number of changes made by repmatch()
+
+    function repmatch(matched, before, word, after) {
+    changes++;
+    return before + '<span class="' + classes[curpat] + '">' + word + '</span>' + after;
+    }
+
+    function highlight(s) {
+    s = " " + s;
+    for (curpat = 0; curpat < patterns.length; curpat++) {
+        s = s.replace(patterns[curpat],
+            repmatch);
+    }
+    return s.substring(1);
+    }
+
+    //    We only modify HTML/XHTML documents
+    if (document.contentType &&
+        (!(document.contentType.match(/html/i)))) {
+        return;
+    }
+
+    // Highlight words in body copy
+
+    var textnodes = document.evaluate("//body//text()", document, null,
+        XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null);
+
+    for (var i = 0; i < textnodes.snapshotLength; i++) {
+    var node = textnodes.snapshotItem(i);
+    /* Test whether this text node appears within a
+       <style>, <script>, or <textarea> container.
+       If so, it is not actual body text and must
+       be left alone to avoid wrecking the page. */
+    if (node.parentNode.tagName != "STYLE" &&
+        node.parentNode.tagName != "TEXTAREA" &&
+        node.parentNode.tagName != "SCRIPT") {
+        /* Many documents have large numbers of empty text nodes.
+           By testing for them, we avoid running all of our
+           regular expressions over a target which they can't
+           possibly match. */
+        if (!(node.data.match(/^\s*$/))) {
+        var s = " " + node.data + " ";
+        changes = 0;
+        var d = highlight(quoteHTML(s));
+        if (changes > 0) {
+            var rep = document.createElement("span");
+            rep.innerHTML = d.substring(1, d.length - 1);
+            node.parentNode.replaceChild(rep, node);
+        }
+        }
+    }
+    }
+
+})();
