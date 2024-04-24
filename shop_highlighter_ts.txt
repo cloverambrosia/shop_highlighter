@@ -1,0 +1,144 @@
+// ==UserScript==
+// @name         Restocking Profit Highlighter (Toy Shop)
+// @namespace    http://www.jellyneo.com
+// @version      1.0
+// @description  Automatically highlights profitable items in Neopets stores.
+// @author       MediaTriggerWords, ayyylmao, modified by Astralruby on Jellyneo
+// @match        https://www.neopets.com/objects.phtml?type=shop&obj_type=3
+// @grant        none
+// ==/UserScript==
+
+(function() {
+
+    var patterns = [], classes = [];
+
+    /*    The following define the classes of words.  If the first
+    character of the specification is "=", the match will be
+    case-sensitive, otherwise it will be case-insensitive.
+    The specification is a regular expression, and should
+    contain metacharacters to handle variant spellings and
+    plurals.  Any grouping within these patterns *must* be done
+    with a (?: ... ) specification to avoid messing up the
+    capture from the text string.
+
+    You may add additional categories as you wish, but be sure to
+    declare their rendering in the style definition below.  */
+
+    //    Rendering styles for our various word classes
+
+    addGlobalStyle('span.red { background-color: #000000; color: #ff1a00; } ' +
+           'span.yellow { background-color: #000000; color: #fdff00;} ' +
+           'span.green { background-color: #000000; color: #23ea11;} ' +
+                 'span.blue { background-color: #000000; color: #01fcfc} ' );
+
+    // RED items. Items in this list will appear as red on black
+
+    defwords(["Blue Meerca Yoyo", "Darigan Aisha Action Figure", "Dark Faerie Snowglobe", "Glyme Collectable Charm", "Zafara Balloon Animal", "Illusen Beauty Bust", "Battle Faerie Snowglobe", "Ruki Action Figure", "Aisha Balloon Animal", "Chocolate Treasure Chest", "Zafara Double Agent Snowglobe", "Air Faerie Charm", "Pull Along Tonu Toy", "Blue Shoyru Kite", "Kaia Quiguki", "Yellow Chomby Model Kit", "Invisible Petpet Leash", "Kastraliss Action Figure", "Quiggle Balloon Animal", "Ona Puppet", "Hissi Playing Cards", "Displeased Sophie New Year Doll", "Abominable Snowball Bobblehead", "Blumaroo Gnome Making Kit", "Chuckles Pinata", "Darigan Moehog Action Figure", "00 Moehog Action Figure", "Painted Pull Along Scarab", "Dice-n-Ruki Board Game", "Eyeball Halloween Goodie Bag", "Grundo Pinata", "NeoQuest II Tent", "Lupe Blue Rope Toy", "Mr Chuckles Action Figure", "Scratchcard Wocky Quiguki", "Purple Korbat Kite", "Lupe Red Rope Toy", "Maraquan Golf Club", "Strange Pull Along Scarab", "Maraquan Grarrl Squirty Toy", "Judge Hog Kite", "Nimmo Fly Swatter", "Silver Scooter", "Taelia Doll", "Uni Booster Pack"],
+    "red");
+
+    //    YELLOW words. These items are black background with yellow text.
+
+    defwords(["Snow Chomby Snowglobe", "NeoQuest II The Board Game", "Patched Stocking", "Lilian Quiguki", "Tooth Faerie Doll", "Rainbow Kiko Squeeze Toy", "Maraquan Moehog Music Box", "Origami Kadoatie", "Princess Amira Action Figure", "Ghost Goldy Bath Toy", "Space Faerie Doll", "Darblat Racer", "Wind Up Shadow Draik", "Jhudora Bobblehead", "Jhudora Snowglobe", "Light Faerie Snowglobe", "Air Faerie Snowglobe", "Green Tentacle Balloon", "King Roo Quiguki", "Faerie Techo Plushie Collectable Charm", "Spotted Rocking Uni", "Fyora Doll", "Moltara Snowglobe", "Red PaintBrush Collectable Charm", "Wocky-Talkie", "White Bike", "Baby Usul Bobblehead", "Easter Bunny Quiguki", "Red Bike", "Hopping Nimmo Action Figure (with awesome LEG POWER!)", "Faerie Queen Snowglobe", "Siyana Kite", "Snowflake Stocking", "Mazzew Yoyo", "Nerkmid Charm", "Pinchit Collectable Charm", "Baby Security Blanket", "Starry Rocking Uni"],
+    "yellow");
+
+    //    GREEN words. Black background, green text.
+
+    defwords(["Charming Belle Quiguki", "Red Skateboard", "Queen Fyora Quiguki", "Usukicon Y25 Goodie Bag", "Illusen Faerie Doll", "Earth Faerie Snowglobe", "Shenkuu Snowglobe", "Luxury Dark and Earth Faerie Snowglobe", "Pretty Valentine Quiguki", "Princess Terrana Collectable Charm", "Happy Halloween Bag", "Blumaroo Jester Mock Sceptre", "Wind Up Hannah", "Cool Purple Teddy Bear", "Starry Stocking", "Tyrannia Snowglobe", "Taiko Standing Drum Collectable Charm", "Pretty Princess Quiguki", "King Altador Kite", "Soup Faerie Doll", "Sloth Collectable Charm", "Roxton Quiguki", "Gormball Garland", "Cybunny Balloon Animal", "Gold Scooter", "Kaylas Chemistry Set", "Wind Up Rainbow Draik", "Uni Gnome Making Kit"],
+    "green");
+
+        //    BLUE words. Black background, blue text.
+
+    defwords(["Elephante Lamp Collectable Charm", "Water Faerie Doll", "Air Faerie Doll", "Pop Star Quiguki", "Negg Faerie Doll", "Luxury Faerie Festival Snowglobe", "Malice Doll", "Techo Statue Collectable Charm", "Quiguki Musketeer", "Traditional Welsh Quiguki", "Blushing Bride Quiguki Doll", "Cyodrake Collectable Charm", "Quiguki Zombie", "Snot Blocks", "Cheerleader Quiguki Doll", "Mime Quiguki", "A Grey Faerie Doll", "Baby Techo Bobblehead", "Quiguki Prom Queen", "Lost Desert Quiguki", "Taelia Quiguki", "Floud Balloon", "What What What Stick", "Luxury Beach Scene Faerie Snowglobe", "Clock", "Jhuidah Snowglobe", "Negg Faerie Snowglobe", "Neopets 24th Birthday Goodie Bag", "Dark Faerie Doll", "Light Faerie Doll", "Mutant Golf Club", "Tigerfruit Collectable Charm", "Tooth Faerie Snowglobe", "Glowing Mushrooms", "Handsome Valentine Quiguki", "Halloween Y14 Goodie Bag"],
+    "blue");
+
+    //    Add one or more words to the dictionary with a specified class
+
+    function defwords(words, which_class) {
+    for (var i = 0; i < words.length; i++) {
+        var w = words[i].replace(/^=/, "");
+        patterns.push(new RegExp("([^a-zA-Z])(" + w + ")([^a-zA-Z])",
+        words[i].match(/^=/) ? "g" : "gi"));
+        classes.push(which_class);
+    }
+    }
+
+    //    Quote HTML metacharacters in body text
+
+    function quoteHTML(s) {
+    s = s.replace(/&/g, "&amp;");
+    s = s.replace(/</g, "&lt;");
+    s = s.replace(/>/g, "&gt;");
+    return s;
+    }
+
+    //    Add one or more CSS style rules to the document
+
+    function addGlobalStyle(css) {
+    var head, style;
+    head = document.getElementsByTagName('head')[0];
+    if (!head) {
+        return;
+    }
+    style = document.createElement('style');
+    style.type = 'text/css';
+    style.innerHTML = css;
+    head.appendChild(style);
+    }
+
+    //    Apply highlighting replacements to a text sequence
+
+    var curpat;             // Hidden argument to repmatch()
+    var changes;            // Number of changes made by repmatch()
+
+    function repmatch(matched, before, word, after) {
+    changes++;
+    return before + '<span class="' + classes[curpat] + '">' + word + '</span>' + after;
+    }
+
+    function highlight(s) {
+    s = " " + s;
+    for (curpat = 0; curpat < patterns.length; curpat++) {
+        s = s.replace(patterns[curpat],
+            repmatch);
+    }
+    return s.substring(1);
+    }
+
+    //    We only modify HTML/XHTML documents
+    if (document.contentType &&
+        (!(document.contentType.match(/html/i)))) {
+        return;
+    }
+
+    // Highlight words in body copy
+
+    var textnodes = document.evaluate("//body//text()", document, null,
+        XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null);
+
+    for (var i = 0; i < textnodes.snapshotLength; i++) {
+    var node = textnodes.snapshotItem(i);
+    /* Test whether this text node appears within a
+       <style>, <script>, or <textarea> container.
+       If so, it is not actual body text and must
+       be left alone to avoid wrecking the page. */
+    if (node.parentNode.tagName != "STYLE" &&
+        node.parentNode.tagName != "TEXTAREA" &&
+        node.parentNode.tagName != "SCRIPT") {
+        /* Many documents have large numbers of empty text nodes.
+           By testing for them, we avoid running all of our
+           regular expressions over a target which they can't
+           possibly match. */
+        if (!(node.data.match(/^\s*$/))) {
+        var s = " " + node.data + " ";
+        changes = 0;
+        var d = highlight(quoteHTML(s));
+        if (changes > 0) {
+            var rep = document.createElement("span");
+            rep.innerHTML = d.substring(1, d.length - 1);
+            node.parentNode.replaceChild(rep, node);
+        }
+        }
+    }
+    }
+
+})();
