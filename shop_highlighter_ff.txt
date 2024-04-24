@@ -1,8 +1,7 @@
-
 // ==UserScript==
 // @name         Restocking Profit Highlighter (Faerie Foods)
 // @namespace    http://www.jellyneo.com
-// @version      1.0
+// @version      1.1
 // @description  Automatically highlights profitable items in Neopets stores.
 // @author       MediaTriggerWords, ayyylmao, modified by Astralruby on Jellyneo
 // @match        https://www.neopets.com/objects.phtml?type=shop&obj_type=39
@@ -34,22 +33,22 @@
 
     // RED items. Items in this list will appear as red on black
 
-    defwords(["Dark Faerie Mushroom", "Simple Fyora Cake", "Water Faerie Mushroom", "Fire Faerie Mushroom", "Fyora Day Cupcakes", "Faerie Flotsam Fricassee", "Extra Cheesy Cheddar Crisps", "Fluffy Faerie Hot Cakes", "Blue Moon Sundae", "Dark Nova Pop", "Jhudora Jelly"],
+    defwords(["Water Faerie Blueberries", "Dark Faerie Mushroom", "Simple Fyora Cake", "Water Faerie Mushroom", "Fire Faerie Mushroom", "Fyora Day Cupcakes", "Faerie Flotsam Fricassee", "Extra Cheesy Cheddar Crisps", "Fluffy Faerie Hot Cakes", "Blue Moon Sundae", "Dark Nova Pop", "Jhudora Jelly"],
     "red");
 
     //    YELLOW words. These items are black background with yellow text.
 
-    defwords(["Veggie Faerie Burger", "Jolly Green Jiggling Jelly", "Air Faerie Mushroom", "Air Faerie Munparaberries"],
+    defwords(["Peachpa Stuffed Potato", "Veggie Faerie Burger", "Jolly Green Jiggling Jelly", "Air Faerie Mushroom", "Air Faerie Munparaberries"],
     "yellow");
 
     //    GREEN words. Black background, green text.
 
-    defwords(["Fire Faerie Red Pepper", "Faerie Block Mallows", "Soup Faerie Mushroom", "Faerie Queen Smoothie Bowl", "Faerie Sparklecake", "Earth Faerie Mushroom", "Bacon Belly Buster", "Sugar Coated Leaf", "Deluxe Fyora Day Cake"],
+    defwords(["Light Faerie Mushroom", "Fire Faerie Red Pepper", "Faerie Block Mallows", "Soup Faerie Mushroom", "Faerie Queen Smoothie Bowl", "Faerie Sparklecake", "Earth Faerie Mushroom", "Bacon Belly Buster", "Sugar Coated Leaf", "Deluxe Fyora Day Cake"],
     "green");
 
         //    BLUE words. Black background, blue text.
 
-    defwords(["Grey Faerie Mushroom", "Space Faerie Mushroom", "Ultra Nova Pop", "Faerie Dreamwich", "Faerie Fruit Salad", "Faerie Chocodrop"],
+    defwords(["Grey Faerie Mushroom", "Space Faerie Mushroom", "Ultra Nova Pop", "Faerie Dreamwich", "Faerie Fruit Salad", "Faerie Chocodrop", "Fyora Apple"],
     "blue");
 
     //    Add one or more words to the dictionary with a specified class
