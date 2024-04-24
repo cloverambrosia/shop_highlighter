@@ -1,0 +1,144 @@
+// ==UserScript==
+// @name         Restocking Profit Highlighter (Magic Books)
+// @namespace    http://www.jellyneo.com
+// @version      1.0
+// @description  Automatically highlights profitable items in Neopets stores.
+// @author       MediaTriggerWords, ayyylmao, modified by Astralruby on Jellyneo
+// @match        https://www.neopets.com/objects.phtml?type=shop&obj_type=7
+// @grant        none
+// ==/UserScript==
+
+(function() {
+
+    var patterns = [], classes = [];
+
+    /*    The following define the classes of words.  If the first
+    character of the specification is "=", the match will be
+    case-sensitive, otherwise it will be case-insensitive.
+    The specification is a regular expression, and should
+    contain metacharacters to handle variant spellings and
+    plurals.  Any grouping within these patterns *must* be done
+    with a (?: ... ) specification to avoid messing up the
+    capture from the text string.
+
+    You may add additional categories as you wish, but be sure to
+    declare their rendering in the style definition below.  */
+
+    //    Rendering styles for our various word classes
+
+    addGlobalStyle('span.red { background-color: #000000; color: #ff1a00; } ' +
+           'span.yellow { background-color: #000000; color: #fdff00;} ' +
+           'span.green { background-color: #000000; color: #23ea11;} ' +
+                 'span.blue { background-color: #000000; color: #01fcfc} ' );
+
+    // RED items. Items in this list will appear as red on black
+
+    defwords(["Illusens Guide to Gardening", "Naughty or Nice", "The Spectre Legacy", "Tis Be Harvesting Time", "Just Rolling Along", "Chia Ghost Stories", "My Best Friend", "A Faerie Beautiful Day", "Banana Wars", "Volcano Run Game Guide", "The Complete History of Wockies", "Scorch E O", "Faerie Usukis", "King Skarl the I", "Escape From Meridell Castle", "Rare and Retired Items", "Usul Health", "Cybunny Secrets", "Attack Of The Meercabots", "Chomby Diary", "Ownow Petting Techniques", "Round About Yurbles", "Treelurkers", "Calendar Scroll", "Winter is Here!", "Roo Island Altador Cup Media Book", "Bacon Guide to Bacon", "Concert Hall Pictures", "Nuts, A Love Story", "Wock the Wok", "Zafara Art", "Gnomes Facts and Legends", "101 Uni Treats", "Poogle Profile", "Acara Algebra", "Geraptiku Digging Sites", "Gnomes and their Kin", "101 Uses for Ice", "Faerie Berry Recipes", "Mynci Law", "200 Puppyblew Tricks", "Enchanted Butterfly Book", "Evil Plots For Beginners", "Koi Scales", "Lutari Painting", "Mynci Book of World Records", "The Midnight Moehog", "Uni Care", "The Grouchiest Neopian", "Uniquely Uni", "Better Than You", "Dark Gelert Rising", "The Confused Mynci", "Baby Kacheeks", "Kiko: Emperor of the Desert", "Lost Spells of Neopia", "A History Of Moehogs", "Growing Flower Crystals", "Indoor Activities For Snow Days", "Virtupets Altador Cup Media Book", "Finding That Bargain", "Hilarious Chia Jokes", "How to Knit Petpets", "Tree Climbing for Beginners", "The Royal Treasure Collection", "Knitting Your Own Hat", "Krawk Pot Recipes", "Eliv Thade Peek a Boo Book", "Sleepy Time", "The Adventures of Sir Snots-A-Lot", "Book of Better Gourmet Recipes from Chef Boggles", "Collecting Buzz Plushies", "The Art of Sleeping In", "Angelic Usukis", "Barallus The Brave", "Crossword Puzzle Almanac", "Usuki Value Guide", "My Neohome", "On The Trot", "Pete the Polarchuck", "Starry Kougra Dreams", "Uni Beauty Manual", "Baby Gelert Pop-Up Book", "Tonu Tails", "Grundo Cafe Recipes", "Altador Altador Cup Media Book", "Wock Around the Clock", "Zombie Legends", "101 Cheese Slices", "Advanced Thermodynamics", "Advert Attack Guide Book", "Book of Gourmet Recipes from Chef Biggles", "Meerca Paint Guide", "A Day At The Races", "Altador Cup Rule Book", "Book of Clams", "Baby Blumaroos", "Cave Batterflies", "Dark Waters", "Poogle Performers", "The Flotsam Raiders", "The History Of Meridell", "Yurble Skirmishes", "Learn to Swim", "Tyrannia Altador Cup Media Book", "Harris Tales", "1002 Spells For You", "The Shoy", "Bleak Meals for One", "The Nimmo Ranger", "My Sweet Scorchio", "How To Play Zurroball", "Ghost Stories", "Jubble Bubble Game Guide", "Once Upon A Chia", "Rainy Day Activities for Koi", "Knights Of Meridell", "Rare Stamps", "Birthday Clues", "How to make Origami Creatures", "JubJub Day Ideas", "Mittens and the Red Balloon", "The Mischevious Mutant Tonu", "The Spotted Flotsam", "Uni Days", "The JubJubs Secret", "Kiko Christmas Story", "The Red Paw", "Ukali Poetry Journal", "Neopian Knitting Patterns", "Scouting For Korbats", "The Wonder Of Toast", "I HATE Carrots!", "Confusing Conundrums", "Advanced Magic", "All About Earth Faeries", "Extreme Arbourism", "Faerie Kau Handbook", "Flotsam Wok Recipes", "Gnorbu Grooming Tips", "Half-eaten Book", "Happy Feet", "Illusens Ixi", "Life In the Citadel", "Pteri Bust Out", "The Uni Trilogy", "To Beak or Not to Beak", "Unlucky Zap", "What Me Cheat", "You Can Be Happy", "Yurble Style"],
+    "red");
+
+    //    YELLOW words. These items are black background with yellow text.
+
+    defwords(["An Eyrie Evening", "Greyed Expectations", "Do It Yourself Bobbleheads", "Draik Magic", "Noodles for ALL", "Unwanted Grey", "Usul Investigations", "Draik Tales", "Toast Tasting", "Abominable Snowball Fights", "The Legend of Scordrax", "Faeries of Winter", "The Hot Scorchio Cook Book", "I, Moehog", "Friends Forever", "Big Book of Facts", "300m Peanut Dash Guide Book", "Biological Encyclopedia of 14 Basic Neopian Algaes Vol. 12", "Little Timmys Story", "Shadow Usul Stories", "The Symol Scientist", "The Draconian Scroll", "The Dark Peophin", "Spooky Usul Stories", "The Ultimate Sticker Book", "Common Cures", "New Years Resolution Journal", "How To Avoid Poisonous Mushrooms.", "Tales of Autumn", "Grand Master", "Kiko Lake Altador Cup Media Book", "Uni and the Uniocto", "Mystery Island Altador Cup Media Book", "The Sneaky Schnelly", "Cooking With Peas", "The Korbat Researcher", "Lost Desert Altador Cup Media Book", "Hiding Valuables", "Usuki Style", "Fall Destinations", "One Hundred Years of Slorgitude", "Famous Aisha Magicians", "Infamous Xweetok Guide", "My Hobby Book", "10 Things in Mystery Island That Originated Elsewhere", "Dr. Sloth Lost Battles", "The Best of Neopian Ice", "Tell Me Why", "The Happiest Negg", "Hot Dog Recipes", "Writers Tips", "Pteri Poetry", "Destruct-O-Match Tips", "How to Roll Cheese", "Legend of the Alabriss", "Bumper Cars Guide Book", "Cave Kacheek", "Ixi Glade", "The Chomby Champion", "Altador Paperback Book", "Game Manual: Pterattack", "The Moehog Encyclopedia", "Daffodil Diary", "Illusens Book of Charm", "Skeith Tails", "Plumpy Care How To", "Scorchio Defence", "The Loneliest Draik", "Unleashed", "Robots Rule", "The Patient Xweetok", "Meridell Altador Cup Media Book", "Spring Soiree", "Terror Mountain Altador Cup Media Book", "Its Aisha Time", "Now You Can Fry Anything", "Common Cures: Revised Edition", "Haunted Woods Altador Cup Media Book", "Nutty The Turdle", "Krawk Island Altador Cup Media Book", "A Beginners Guide to Mixing Transmogrification Potions", "101 Beverage Recipes", "Dont Call Me Cute", "Year of the Snowbunny", "Mutations in Kacheeks", "On Tour with Chomby and the Fungus Balls", "Cybunny Mutations", "Zap the Robot Aisha", "The Plushie Skeith", "Chocolate Chia Cookbook", "Patter Feet", "Snot Knots", "Creating a Lucky Zafara", "JubJub Journal", "Popular Destinations", "The Pineapple Chia", "The Babaa Who Jumped Over the Moon", "Maraqua Altador Cup Media Book", "Secret Bruce Journal", "Feepit Pop-Up Book", "Catalogue of Secret Paintbrushes", "Wings of a Ghost", "Grandfather Koi", "Crypt Days", "Neopian Autumns", "Advanced Basket Weaving", "Wocky Magic", "101 Uses Of Bacon", "Nimmos Pond Guide Book", "Memoirs of an Aisha", "Grey in the Shade"],
+    "yellow");
+
+    //    GREEN words. Black background, green text.
+
+    defwords(["12 Angry Myncies", "All is Well", "Book of Fake Scratchcards", "Cake Recipes for All Occasions", "Chianatomy", "Culture and History of Faerieland", "Go Home Moehog!", "Neopias Past", "Rubber Mallard Collecting", "Shenkuu Hiking", "The Draik", "The Way of the Draik", "Professor Hugo Fairweathers Guide to Petpetpets", "Gallery Of Toast", "Maraquan Pop-Up Book", "Mollusk Magazine", "Super Lupe Comics", "Unabridged Dictionary", "Hold Your Breath", "Peophin Power!", "Cheat By Capara", "Faerie Chombies", "101 Thieving Tricks", "Jazzmosis Biography", "Growing a Vine Yard", "Lupe Legends", "Making Kau Plushies", "Meruth The True Story", "All About Fire Faeries", "The Pea From Outer Space", "Lawyerbot Poetry Vol. 1", "Chomby Poems", "The Grizzly Gruslen", "Cleaning Technology", "Cenanit Ragamans", "A Magazine", "Darigan Citadel Altador Cup Media Book", "Origami Poogle Pop Up Book", "Captain Meerca", "Book of Evil Schemes", "The Velveteen Draik", "Illusens Journey", "The Life of a Hot Dog", "Experimental Physics", "Illusens Illusion", "The Lonely JubJub", "Jeran the Lupe", "101 Leafy Uses", "Buzz Acrobatic Stunts", "Legend Of The Quiggle Runner", "Uni Cycles", "Gelert A to Z", "Monstrous Makeovers", "Baby JubJub Cloth Book", "Famous Chias", "Carnival Of Terror Guide Book", "The Chomby Secret", "The Guide to Facial Hair", "How to Make a Bonfire", "Kacheek Magic", "Spotting Seaweed", "Purple Lupe Photo Album", "Forbidden Pteri Tales", "Krawk Island Altador Cup Play Book", "Shenkuu Floral Arrangement", "Faerieland Altador Cup Media Book", "Book of Symols", "Shenkuu Altador Cup Media Book", "Aisha Lovin It"],
+    "green");
+
+        //    BLUE words. Black background, blue text.
+
+    defwords(["Gifts for your Enemies", "The Voodoo Techo", "Brain Trees Brainiac", "Cures for Bad Breath", "Illusens Diary", "Modern Lupe Magazine", "Decoding a Coded Decoding Book", "Chomby Mysteries", "Ultimate Space Chronicles Set", "Super Secret Guide to the Defenders of Neopia Headquarters", "Olde Zafara", "Zafara Mystery Collection", "Inside the Mind of Bob", "A Chia Halloween", "Petfolio", "Lenny Cookbook", "The Magic Staff", "Bruces Guide to Combat Eating", "Forbidden Zafara", "The Bad Skeith", "Uni Myths", "Princess Vyssas Diary", "Nimmo Battle Cry", "A Seasonal Pea", "Baking Chocolate Korbats", "Kougra Classics", "The Island Of Kacheeks", "Book Of Peas", "Calculus Basics", "Faerie Secrets", "Iron Skeith", "Jelly Acara Travels", "Moehog Matching", "The Happiest Day", "The Key to being an Altadorian", "Grundo Tales", "Gruslens Galore", "1052 Sakhmetian Tales", "Aerial Shots of Neopia", "Cybunny Care", "Joy of Jelly Kaus", "Lupe Digest", "My Life As A Lenny", "Poogle Pages", "When Neggs Explode", "Moehog Masterpieces", "Book of Bruno", "Neopian Atlas", "Neopian Heroes"],
+    "blue");
+
+    //    Add one or more words to the dictionary with a specified class
+
+    function defwords(words, which_class) {
+    for (var i = 0; i < words.length; i++) {
+        var w = words[i].replace(/^=/, "");
+        patterns.push(new RegExp("([^a-zA-Z])(" + w + ")([^a-zA-Z])",
+        words[i].match(/^=/) ? "g" : "gi"));
+        classes.push(which_class);
+    }
+    }
+
+    //    Quote HTML metacharacters in body text
+
+    function quoteHTML(s) {
+    s = s.replace(/&/g, "&amp;");
+    s = s.replace(/</g, "&lt;");
+    s = s.replace(/>/g, "&gt;");
+    return s;
+    }
+
+    //    Add one or more CSS style rules to the document
+
+    function addGlobalStyle(css) {
+    var head, style;
+    head = document.getElementsByTagName('head')[0];
+    if (!head) {
+        return;
+    }
+    style = document.createElement('style');
+    style.type = 'text/css';
+    style.innerHTML = css;
+    head.appendChild(style);
+    }
+
+    //    Apply highlighting replacements to a text sequence
+
+    var curpat;             // Hidden argument to repmatch()
+    var changes;            // Number of changes made by repmatch()
+
+    function repmatch(matched, before, word, after) {
+    changes++;
+    return before + '<span class="' + classes[curpat] + '">' + word + '</span>' + after;
+    }
+
+    function highlight(s) {
+    s = " " + s;
+    for (curpat = 0; curpat < patterns.length; curpat++) {
+        s = s.replace(patterns[curpat],
+            repmatch);
+    }
+    return s.substring(1);
+    }
+
+    //    We only modify HTML/XHTML documents
+    if (document.contentType &&
+        (!(document.contentType.match(/html/i)))) {
+        return;
+    }
+
+    // Highlight words in body copy
+
+    var textnodes = document.evaluate("//body//text()", document, null,
+        XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null);
+
+    for (var i = 0; i < textnodes.snapshotLength; i++) {
+    var node = textnodes.snapshotItem(i);
+    /* Test whether this text node appears within a
+       <style>, <script>, or <textarea> container.
+       If so, it is not actual body text and must
+       be left alone to avoid wrecking the page. */
+    if (node.parentNode.tagName != "STYLE" &&
+        node.parentNode.tagName != "TEXTAREA" &&
+        node.parentNode.tagName != "SCRIPT") {
+        /* Many documents have large numbers of empty text nodes.
+           By testing for them, we avoid running all of our
+           regular expressions over a target which they can't
+           possibly match. */
+        if (!(node.data.match(/^\s*$/))) {
+        var s = " " + node.data + " ";
+        changes = 0;
+        var d = highlight(quoteHTML(s));
+        if (changes > 0) {
+            var rep = document.createElement("span");
+            rep.innerHTML = d.substring(1, d.length - 1);
+            node.parentNode.replaceChild(rep, node);
+        }
+        }
+    }
+    }
+
+})();
