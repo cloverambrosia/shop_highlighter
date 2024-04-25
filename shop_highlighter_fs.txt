@@ -1,0 +1,145 @@
+// ==UserScript==
+// @name         Restocking Profit Highlighter (Food Shop)
+// @namespace    http://www.jellyneo.com
+// @version      1.0
+// @description  Automatically highlights profitable items in Neopets stores.
+// @author       MediaTriggerWords, ayyylmao, modified by Astralruby on Jellyneo
+// @match        https://www.neopets.com/objects.phtml?type=shop&obj_type=1
+// @match        https://www.neopets.com/objects.phtml?obj_type=1&type=shop
+// @grant        none
+// ==/UserScript==
+
+(function() {
+
+    var patterns = [], classes = [];
+
+    /*    The following define the classes of words.  If the first
+    character of the specification is "=", the match will be
+    case-sensitive, otherwise it will be case-insensitive.
+    The specification is a regular expression, and should
+    contain metacharacters to handle variant spellings and
+    plurals.  Any grouping within these patterns *must* be done
+    with a (?: ... ) specification to avoid messing up the
+    capture from the text string.
+
+    You may add additional categories as you wish, but be sure to
+    declare their rendering in the style definition below.  */
+
+    //    Rendering styles for our various word classes
+
+    addGlobalStyle('span.red { background-color: #000000; color: #ff1a00; } ' +
+           'span.yellow { background-color: #000000; color: #fdff00;} ' +
+           'span.green { background-color: #000000; color: #23ea11;} ' +
+                 'span.blue { background-color: #000000; color: #01fcfc} ' );
+
+    // RED items. Items in this list will appear as red on black
+
+    defwords(["Chocolate Lupe Ice Cream", "Cucumber Tea Sandwiches", "Freeze Dried Sausage", "Buzz Honey Pot", "Nimmo Day Fruit Cake", "Bubbly Rhuby Fruit Juice", "Mayonnaise Chilli and Cheese covered Corn on the Cob", "Mini Koi Cereal", "Chocolate Nimmo Dessert", "Freeze Dried Meat", "Sour Cream Chomby Crisps", "Extra Large Xweetok Sushi", "Scorchio Smores", "Bowl Hominy", "Bubbly Twirly Fruit Juice", "Chocolate Gnome Crunch", "Pumpkin Bread", "Snot Sandwich", "Tea Waffles", "Doglefox Cookies", "Fresh Borovan and Asparagus Tart", "Grapeade", "Wishbone Delight", "Blue Goo Techo Cake", "Chocolate Poogle Cupcake", "Cole Slaw", "Fried Something Something", "Number Jelly Parfait", "Black Cherry Ice Lolly", "Deep-Fried Vegetables", "Strawberry Scorchio Treat", "Felberry Gormball Sandwich", "Aisha Tomato and Potato Soup", "Sausage Gravy", "Xweetok Sugar Cookies", "Chicken Dumpling Soup", "Paper-Wrapped Chicken", "Breakfast Cake", "Double Stuffed Guppy", "Ixi Acorn Meatball", "Strawberry Oatmeal", "Taco Salad", "A Smatter of Ketchup", "Cheese and Tonu Crackers", "Cherry Mynci Burger", "Chokato Sundae", "Congratulations Negg", "Cupid Negg", "Lemonade", "A Smatter of Mayo", "Wocky Spaghetti Ball", "Grootafruit Punch", "Scorched Kabob", "Extra Large Fizzy Drink", "Grilled Islandberry Slices", "Iced Shoyru Meatball", "Knowledge Hungry Burger", "Meaty Gnorbu Pie", "Hearty Pie", "Suspicious Borovan Creame Pie", "Sketch Sundae", "Vanilla Aisha Pudding", "Zafara Veggie Stew", "Flotsam Ice Cream Sundae", "Grilled Cheese Soup Dippers", "Mini Kau Cheese Wheel", "Vegetarian Usul Wrap", "Number Pasta", "Phear Flavoured Milk", "Cheesykraut Hot Dog", "Pomegranate", "Chocolate Chomby Ice Cream Sandwich", "Strawberry Ixi Fizzy Drink", "Blue Berry Aisha Ice Cream", "Chocolate Green Tea Parfait", "Mosaic Negg", "Dirt Achyfi", "Jelly Smores", "Nutty Spaghetti", "Spaghetti Hot Dog", "Techo Garden Salad", "Apple Rigamaroll", "Bowl of Mushy Peas", "BLT Sandwich with Cheese", "Brown Sugar Oatmeal", "Sour Apple Ixi Fizzy Drink", "Swirly Chocolate Milk", "Thistleberry Sandwich", "Twirly Fruit Cream Cheese Dip", "Watercress Tea Sandwiches", "Meat and Potatoes Krawk Pot", "Potato Salad", "Tea Jelly", "Beans on Toast", "Buzz Mashed Potato", "Chokato Cream Cheese Dip", "Deep-Fried Candy Floss", "Fruit Punch Roll", "Happy Birthday Negg", "Mild Cheddar Jetsam Fin Crackers", "Negg Noodle Soup", "Number Fruit Leather", "Raspberry Sundae", "Ixi Double Veggie Burger", "Lemon and Orange Blend", "Slorg Biscuits", "Roast Chestnut Neggnog", "Strawberry JubJub Sundae", "Fire Tonic", "Chia Chia Pudding", "Egg Roll", "Fruity Aisha Sundae", "Gingerbread Cookie Box", "Hash Browns", "Chokato Omurice", "Zafara Breakfast", "Dried Lupe Snack", "Mutant Kau Milkshake", "Draik Soup", "Snow Enchiladas", "Raspberry Basket", "Cheddar Kacheek Cheese", "Shiver Me Shrimp", "Beef and Veggie Soup", "French Toast", "Star Shaped Cheeseburger", "Dressing and Cranberry Sandwich", "Paper-Wrapped Veggies", "Fizzy Apple Juice", "Salmon Cream Cheese Dip", "Snow Lemon", "Bubbly Harffel Fruit Juice", "Christmas Wocky Cranberry Meatloaf", "Sketch Pie", "Sloth Day Soup", "Snorkle in a Blanket", "Doglefox Candy Floss", "Portobello Platter", "Chunky Mushroom Soup", "Disco Ice Cream", "Unripe Puntec Wrap", "Spicy BBQ Chomby Crisps", "Caviar Sandwich", "Continuous Meat", "Hot Buzz Pie", "Quadruple Scoop of Sorbet", "Sketch Eggs", "Stone Veggie Gormball Sandwich", "Chocolate Aisha Sundae", "Creamy Jello Jigglers", "Veggie Delight Jetsam Fin Crackers", "Chicken Taquitos", "Sausage and Chips", "Turkey Enchilada", "Red Bruce Juice", "Waffle Burger", "Freeze Dried Bacon", "Tofu Poogle Pate", "Carrot Cupcake", "Clam and Meatball Pizza", "Faeriemoya", "Fancy Rack of Lamb", "Fish Filet Sandwich", "Korbat Cheese and Crackers", "Kyrii Dewy Apple Milkshake", "Left-Over Sliced Turkey Sandwich", "Peanut Butter and Jelly Hot Dog", "Pink Triple Decker Sandwich", "Squid Sauce", "Tall Stack of Mutant Pancakes", "Tonu Sorbet", "Uni Crisps"],
+    "red");
+
+    //    YELLOW words. These items are black background with yellow text.
+
+    defwords(["Peppered Salmon Dish", "Cookie Negg", "Cawl", "Chokato Neggnog", "Flied Rice", "Diet Big Gulp Neocola", "Twin Salad", "Purple Carrot", "Flotsam Fin Soup", "Watermelon Jetsam", "Kyrii Agueena Milkshake", "Noil Candy Floss", "Ham Casserole", "Orange Baby Aisha Lollypop", "Turkey Drumstick Dinner", "Wocky Plum Pudding", "Deluxe Elephante Cake", "Vanilla Neocola", "Watermelon Roll", "Lupe Burger", "Lutari Fizz", "Baked Avocado with Curried Sauce", "Blumaroo Ice Cream Sundae", "Kyrii Jumbleberry Milkshake", "Gnome Crunch", "Cinnamon Neocola", "Cream of Tchea Soup", "Egg and Carrots", "Carrots in Salad", "Korbat Pasta and Meatballs", "Moehog Milkshake", "Pickled Peppers", "Grapefruit Biscuits", "Chocolate Shoyru Meatball", "Chocolate Ice Cream", "Wormy Jam Sandwich", "Chia Cereal", "Plain Crackers", "Blueberry Jelly Doughnut", "Jhudora Eyeball Pasta", "Pineapple and Broccoli Pie", "Minty Aisha Sundae", "Disco Toast", "Techo Jelly Surprise", "Vanilla Yurblecone", "Crunchy Buzz Honey Delight", "Jelly Neocola", "Kacheek Meatball", "Shell Lollypop", "Negg", "Black Cherry Taco", "Squibble Berry Sandwich", "Extra Meaty Pie", "Raspberry Aisha Waffle", "Dorkleshroom", "Elephante Ice Cream", "Slice of Zafara Pizza", "Red Buzz Energy Drink", "Sweet and Sour Soup", "Deluxe Cheese Fondue", "Kadoatie Puffs", "Dubloon Nuggets", "Raspberry Yurblecone", "Pickled Pears", "Strawberry Cybunny Ice Cream", "Buzz Sandwich", "Smiley Pancakes", "Symol Cheddar Cheese Ball", "Tuskaninny Ice Cream", "Chocolate Poogle Lolly", "Red Scorchipepper", "Deep-Fried Okra", "Extra Meaty Sandwich", "Egg Pate", "Tonu Cheeseburger", "Bacon Tape", "Mutant Doughnut", "Draik Wrap", "CPMPB Salad", "Doughnutfruit Punch", "Vanilla Skeith Cone", "Tomato Baby Food", "Double Scoop of Sorbet", "Sloth Day Nachos", "Korbat Veggie Plate", "Purple Hamburger", "Number Crackers and Cheese", "Poogle Spaghetti", "Square Marshmallows", "Gnorbu Wool and Jelly Sandwich", "Symol Mouldy Cheese Ball", "Chocolate Elephante Doughnut", "Exotic Plant", "White Cheddar Jetsam Fin Crackers", "Curried Chicken Tea Sandwiches", "Garlic Mashed Potatoes", "Turkey Curry", "Pink Cheese", "Koi Seaweed Sundae", "Acara Rainbow Lollypop", "Cinnamon Apple Chips", "Cinnamon Toasties", "Egg Stew", "Exotic Sliced Truffles", "Flotato-Stuffed Turkey", "Fruit Basket", "Golden Tangerines", "Mini Swiss Kau Cheese Wheel", "Turnip Eyrie Souffle", "Flaming Hot Burger", "Doglefox Ice Cream Scoops", "Peanut Butter & Jelly Waffle Sandwich", "Chocolate Covered Carrot", "Quiggle Veggie Soup", "Blue Acara Cake", "Orange Yurblecone", "Strawberry Parfait", "Thornberry Gormball Sandwich", "Creamy Sweet Potato Soup", "Hot Fruit Soup", "Peanut Butter and Jelly Gormball Sandwich", "Cybunny Carrot Stew", "Gourmet Fried Chicken and Waffles", "Orange Jetsam Cupcake", "Snotty Vira Onion", "Toast on Toast", "Buzz Sandwich With Honey", "Deep-Fried Mac-n-Cheese Loaf", "Raspberry Baby JubJub Lollypop", "Teasicle", "Blackberry Sorbet", "Small Fizzy Drink", "Dirt Ice Cream", "Gnorbu Wool Candy Floss", "Ogrin Peanut Butter and Jelly Sandwich", "Stuffed Chokatos", "Seasoned Lupe Chips", "Gnorbu Chocolate Pudding", "Steak Platter", "Noil Mashed Potatoes", "Apple Walnut Tea Sandwiches", "Edible Argyle Socks", "Meerca Bolognese", "Tomato Omurice", "Toffee Chocolate Aisha Sundae", "Beef Wellington", "Blueberry and Orange Blend", "Liver Poogle Pate", "Veggie Burger", "Fried Potato Balls", "Gnorbu Wool Burger", "Seaweed Bacon", "Turkey Dumplings", "Chestnut Soup", "Giblets Gravy", "Gourmet Grilled Steak Salad", "Raspberry Scones", "Scaled Negg", "Special Breakfast", "Valentines Negg", "Mynci Fruit Kebab", "Dirt Burgers", "Lamb Chop"],
+    "yellow");
+
+    //    GREEN words. Black background, green text.
+
+    defwords(["Acara Ice Cream Surprise", "Baby Bloater", "Chocolate Coated Tangy Cheese", "Forbidden Plunder", "Meerca Apertif", "Pinanna Paradise", "Land Lubber", "Pirate Negg", "Island Meatloaf", "Uni Salad", "Rainbow Negg", "Cannon Fodder", "Krakuberry Grog", "Walk The Plank", "Bangers and Mash", "ErgyFruit Grog", "Grape Pop", "Lawyerbot Degreaser", "Red Picnic Hamper", "Man O War", "Assorted Vandagyre Approved Nuts", "Black Caviar", "Slithering Squid Surprise", "Cherry Pop", "Tchea Grog", "Mocha Joy Fun Pop", "Bomberry Grog", "Cybunny Day Canape", "Raspberry Pop", "Berry Joy Fun Pop", "Lemon Pop", "Chilli Salmon Souffle", "Puntec Parcel", "Krakuberry Cove", "Keel Haul", "Starry Scorchipepper", "Squid on a Stick", "Donut Burger", "Chocolate Joy Fun Pop", "Grog Light", "Green Ham", "Leftover Shortcrust Pastry", "Speckled Negg", "Fancy Rack of Lamb with Fruit", "Mega Pipper Sandwich", "Funnydew Neggnog", "Heart Shaped Negg", "Le Sausage", "Bag of Peanuts", "Seaweed Flotsam Burger", "Candy Cane Negg", "Steak Negg", "Purple Cybunny Negg", "Swirly Negg #498", "Square Meat", "Yellow Negg", "Ultimate Icy Negg", "Cheesy Choco Cookie", "Rock Negg", "Illusen Negg", "Purple Negg", "Christmas Pattern Negg", "Strawberry Taco", "Ultra Icy Negg", "Rainbow Neggnog", "Deluxe Peophin Burger", "Kau Waffles", "Partitioned Negg", "Lemon Swirly Negg", "Decorative Negg", "Ruki Salad", "French Toast PB&J Sandwich", "Pink Negg", "Grey Waffles", "Super Icy Negg", "Ornate Purple Negg", "Jelly Negg", "Glass Negg", "Peach Jelly", "Pizza Sandwich", "Bacon Taco", "Green Negg", "Raspberry Jam", "Blue Negg", "Evil Popcorn", "Grey Eggs and Bacon", "Fall Leaf Salad", "Welsh Rarebit", "Extra Fancy Crackers", "Uni Ice Cream", "Fire Carrot", "Baby Elephante Milk Bottle", "Petpet Crackers", "Peanut Dash Stir Fry", "Fruit Tart", "Watermelon Maraquan Shoyru", "Apple Juice Sippy Cup", "Asparagus Borovan Lasagne", "Flower Nectar", "Jalapeno Kacheek Cheese", "Lime Swirly Negg", "Tasty Guacamole", "Fried Negg Sandwich", "Frozen Veggie Delight", "Battle Duck Negg", "Maple Syrup Negg", "Neopets 18th Birthday Cake", "Sweet and Sour Negg", "Orange Negg", "JubJub Coconut Juice", "Thorn on the Cob", "Peanut Butter Tonu Crackers", "Mynci Surprise Ice Cream"],
+    "green");
+
+        //    BLUE words. Black background, blue text.
+
+    defwords(["Chicken Filets with Fancy Sauce", "Rainbow Cybunny Negg", "BLT Croissant", "Onion and Mustard Pie", "Big Gulp Neocola", "Olivetato", "Mega Sandwich", "Borovan Layered Cake", "Egg and Tomato Sandwich", "Chain of Onions", "Mighty Steakwich", "Rainbow Carrot", "Chocolate Coated Cheese Strings", "Happy Anniversary Negg", "Polka Carrot", "Kadoatie Biscuits", "Plum", "Blue Cybunny Negg", "Chokato Toffee Apple", "Mutated Negg", "Rainbow Apple", "Raspberry Toffee Apple", "Upside Down Ice Cream", "Glowing Apple", "Blue Picnic Hamper", "Borovan Hot Chocolate Bomb", "Cheesy Carrot Chunks", "Cheesy Chokato Pie", "Cheesy Strawberry Slice", "Flaming Tuskaninny Ice Cream", "Fun Icy Cheese Pop", "Pretty Purple Princess Negg", "Purple Picnic Hamper", "Tchea Toffee Apple", "Tigersquash Custard", "Invisible Cookie", "Grey Toast", "Loretta Fontaines Perfect Pizza", "Starry Cupcake", "Candy Floss Carrot", "Steak Surprise", "Cheesy Chocoshake", "Honey and Bacon Burger", "Puntec Cupcake", "Purple Potato Aperitif", "Headless Horsefish", "Hogshead", "Illusens Family Recipe Cake", "Mega Tuna Sandwich", "Our Famous Krawk Pie", "Bilge Rat Madeira", "Capn Threelegs Cutlass Crusade", "Ice Apple", "Zeenana Toffee Apple", "Puzzle Fruit", "Mega Manoroot Sandwich", "Fire Apple", "Wocky Steak", "Barnacle Bills Belt Busting Burger", "Cheesy Krawk Dip", "Lenny Salad", "Carrot Crown", "Blueberry and Oyster Ice Cream", "Chocolate Coated Holey Cheese", "Container of Purple Liquid"],
+    "blue");
+
+    //    Add one or more words to the dictionary with a specified class
+
+    function defwords(words, which_class) {
+    for (var i = 0; i < words.length; i++) {
+        var w = words[i].replace(/^=/, "");
+        patterns.push(new RegExp("([^a-zA-Z])(" + w + ")([^a-zA-Z])",
+        words[i].match(/^=/) ? "g" : "gi"));
+        classes.push(which_class);
+    }
+    }
+
+    //    Quote HTML metacharacters in body text
+
+    function quoteHTML(s) {
+    s = s.replace(/&/g, "&amp;");
+    s = s.replace(/</g, "&lt;");
+    s = s.replace(/>/g, "&gt;");
+    return s;
+    }
+
+    //    Add one or more CSS style rules to the document
+
+    function addGlobalStyle(css) {
+    var head, style;
+    head = document.getElementsByTagName('head')[0];
+    if (!head) {
+        return;
+    }
+    style = document.createElement('style');
+    style.type = 'text/css';
+    style.innerHTML = css;
+    head.appendChild(style);
+    }
+
+    //    Apply highlighting replacements to a text sequence
+
+    var curpat;             // Hidden argument to repmatch()
+    var changes;            // Number of changes made by repmatch()
+
+    function repmatch(matched, before, word, after) {
+    changes++;
+    return before + '<span class="' + classes[curpat] + '">' + word + '</span>' + after;
+    }
+
+    function highlight(s) {
+    s = " " + s;
+    for (curpat = 0; curpat < patterns.length; curpat++) {
+        s = s.replace(patterns[curpat],
+            repmatch);
+    }
+    return s.substring(1);
+    }
+
+    //    We only modify HTML/XHTML documents
+    if (document.contentType &&
+        (!(document.contentType.match(/html/i)))) {
+        return;
+    }
+
+    // Highlight words in body copy
+
+    var textnodes = document.evaluate("//body//text()", document, null,
+        XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null);
+
+    for (var i = 0; i < textnodes.snapshotLength; i++) {
+    var node = textnodes.snapshotItem(i);
+    /* Test whether this text node appears within a
+       <style>, <script>, or <textarea> container.
+       If so, it is not actual body text and must
+       be left alone to avoid wrecking the page. */
+    if (node.parentNode.tagName != "STYLE" &&
+        node.parentNode.tagName != "TEXTAREA" &&
+        node.parentNode.tagName != "SCRIPT") {
+        /* Many documents have large numbers of empty text nodes.
+           By testing for them, we avoid running all of our
+           regular expressions over a target which they can't
+           possibly match. */
+        if (!(node.data.match(/^\s*$/))) {
+        var s = " " + node.data + " ";
+        changes = 0;
+        var d = highlight(quoteHTML(s));
+        if (changes > 0) {
+            var rep = document.createElement("span");
+            rep.innerHTML = d.substring(1, d.length - 1);
+            node.parentNode.replaceChild(rep, node);
+        }
+        }
+    }
+    }
+
+})();

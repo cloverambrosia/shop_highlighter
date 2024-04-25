@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Restocking Profit Highlighter (Toy Shop)
 // @namespace    http://www.jellyneo.com
-// @version      1.0
+// @version      1.1
 // @description  Automatically highlights profitable items in Neopets stores.
 // @author       MediaTriggerWords, ayyylmao, modified by Astralruby on Jellyneo
 // @match        https://www.neopets.com/objects.phtml?type=shop&obj_type=3
