@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Restocking Profit Highlighter (Booktastic Books)
 // @namespace    http://www.jellyneo.com
-// @version      1.0
+// @version      1.1
 // @description  Automatically highlights profitable items in Neopets stores.
 // @author       MediaTriggerWords, ayyylmao, modified by Astralruby on Jellyneo
 // @match        https://www.neopets.com/objects.phtml?type=shop&obj_type=70
@@ -38,17 +38,17 @@
 
     //    YELLOW words. These items are black background with yellow text.
 
-    defwords(["Situational Gravity Pranks", "Meteorite Craft Book", "Easy Decor in Low Gravity Situations", "Get Organised Stay Organised", "Myths and Legends of Alien Aishas", "Secrets of Sloth", "Under the Surface Part II", "Zenor Kevix: A Biography"],
+    defwords(["Kreludan Home Decorating", "Situational Gravity Pranks", "Meteorite Craft Book", "Easy Decor in Low Gravity Situations", "Get Organised Stay Organised", "Myths and Legends of Alien Aishas", "Secrets of Sloth", "Under the Surface Part II", "Zenor Kevix: A Biography"],
     "yellow");
 
     //    GREEN words. Black background, green text.
 
-    defwords(["Diary of a Baby Space Fungus", "Kreludor Mining Corridor Maps", "Grundos Guide to Brain Washing", "The Handy Guide to Neopian Domination"],
+    defwords(["Half Moon Pop-Up Book", "Lennies in Space", "Diary of a Baby Space Fungus", "Kreludor Mining Corridor Maps", "Grundos Guide to Brain Washing", "The Handy Guide to Neopian Domination"],
     "green");
 
         //    BLUE words. Black background, blue text.
 
-    defwords(["Alien Aisha Invasion", "Guide to the Neocola Machine", "It Came From Kreludor"],
+    defwords(["Space Station Schematics", "Kreludan Cookie Cookbook", "The Space Ace", "It Came From the Mine", "Kreludan Architecture", "Secrets of the Universe", "Alien Aisha Invasion", "Guide to the Neocola Machine", "It Came From Kreludor"],
     "blue");
 
     //    Add one or more words to the dictionary with a specified class
