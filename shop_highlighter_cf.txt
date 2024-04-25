@@ -1,0 +1,144 @@
+// ==UserScript==
+// @name         Restocking Profit Highlighter (Chocolate Factory)
+// @namespace    http://www.jellyneo.com
+// @version      1.0
+// @description  Automatically highlights profitable items in Neopets stores.
+// @author       MediaTriggerWords, ayyylmao, modified by Astralruby on Jellyneo
+// @match        https://www.neopets.com/objects.phtml?type=shop&obj_type=14
+// @grant        none
+// ==/UserScript==
+
+(function() {
+
+    var patterns = [], classes = [];
+
+    /*    The following define the classes of words.  If the first
+    character of the specification is "=", the match will be
+    case-sensitive, otherwise it will be case-insensitive.
+    The specification is a regular expression, and should
+    contain metacharacters to handle variant spellings and
+    plurals.  Any grouping within these patterns *must* be done
+    with a (?: ... ) specification to avoid messing up the
+    capture from the text string.
+
+    You may add additional categories as you wish, but be sure to
+    declare their rendering in the style definition below.  */
+
+    //    Rendering styles for our various word classes
+
+    addGlobalStyle('span.red { background-color: #000000; color: #ff1a00; } ' +
+           'span.yellow { background-color: #000000; color: #fdff00;} ' +
+           'span.green { background-color: #000000; color: #23ea11;} ' +
+                 'span.blue { background-color: #000000; color: #01fcfc} ' );
+
+    // RED items. Items in this list will appear as red on black
+
+    defwords(["Miniature Chocolate Chocolate Factory", "Kau Sundae", "Ummagine Candy Cane", "Gooseberry Snorkle Lollypop", "Jack-O-Lantern Pail", "Dried Date Sweets", "Cashew Brittle", "Strawberry Tuskaninny Lolly", "Dark Chocolate Gnorbu", "Blueberry Gummy Slorg", "Orange Gummy Slorg", "Cherry Bori Lolly", "Lime Skidget Lolly", "Chocolate Honey Buzz Bar", "Chocolate Swirl Nova", "Lemon Bumbluz Lolly", "Mint Chocolate Chia", "Baby Cybunny Chocolate Egg", "Codestone Truffle", "Sherbert Lemons", "Pink Lab Jellies Candy", "Strawberry Chocolate Krawk Coin", "White Chocolate Nova", "Fluff N Stuff Grarrl Gobstopper", "Korbat Sugar Skull", "Grape Blumaroo Gummy Die", "Lost City Lanes Lime Gobstopper", "Sugar Moehog Skull", "Gnorbu Lollipop", "Mallowicious Bar", "Milk Chocolate Kacheek", "Milk Chocolate Mynci", "Blueberry Gummy Stamp", "Kougra Sugar Skull", "Lime Grarrl Pop", "Sweet Necklace", "Barbed Wire Black Licorice", "Uni Sugar Skull", "Mud Lollipop", "Candy Whistle", "Chocolate Valentine Crossbow", "Strawberry Techo Pop", "Juppiemint Bar", "Chocolate Draik Wing", "Milk Chocolate Tonu", "Baby Cabbage Jelly Beans", "Chocolate King Skarl", "Large White Chocolate Cybunny", "Peanut Butter Gormball Truffle", "Orange Chocolate Kacheek", "Chocolate Lenny on a Stick", "Mint Chocolate Krawk Coin", "Neocola Bottles", "Large Milk Chocolate Cybunny", "Milk Chocolate Gnorbu"],
+    "red");
+
+    //    YELLOW words. These items are black background with yellow text.
+
+    defwords(["Chocolate Blossom", "Rainbow Candy Floss", "Cherry Mootix Lollypop", "Mint Chocolate Peophin", "Bullseyes", "Grape Gummy Slorg", "Cherry Meerca Gobstopper", "Chocolate Jeran", "Chocolate Crown of the Faeries", "Neverending Jar of Jellybeans", "Minty Choccywhip", "Banana Jelly Flotsam", "Apple and Custard Drops", "White Chocolate Hissi", "Large Swirly Chocolate Cybunny", "Candy Heart Necklace", "2 Scoops of Friendship", "Orange Chocolate Tuskaninny", "Cherry Aboogala Lolly", "Chocolate Maractite Coins", "Heart Lollipop", "Kougra Chocolate Dubloon", "Bubblegum Cybunny", "Gnorbu Gum", "Milk Chocolate Grundo"],
+    "yellow");
+
+    //    GREEN words. Black background, green text.
+
+    defwords(["Caramel and Custard Drops", "Creamy Choccywhip", "Chocolate Advent Calendar", "Spooky Flying Doughnut", "Hazelnut Whirl", "Chocolate Peach", "Chocolate Cybunny Negg", "Holiday Bell Chocolate Advent Calendar", "ErgyFruit Jelly Beans", "Snowflake Chocolate Advent Calendar", "Orange Scoach Lolly", "Yummy Drops", "Super Spicy Jelly Beans", "Draik Sugar Skull", "Chocolate Dr Sloth", "Angry Candy", "Sugar Tonu Skull", "Omnipotent Onion Grarrl Gobstopper"],
+    "green");
+
+        //    BLUE words. Black background, blue text.
+
+    defwords(["Sniddberry Meerca Gobstopper", "Apple Moquot Lollypop", "Deluxe Strawberry Toffee Chokato", "Candy Cane Chocolate Advent Calendar", "Double Chocolate Jelly Beans", "Chocolate Moltenore", "Pretty Pink Easter Negg", "Neotruffle", "Chocolate Orange Easter Negg", "Spotted Easter Negg", "Lemon and Lime Easter Negg", "Chocolate Ruki Kit", "Luxury Chocolate Easter Negg", "Mint Chocolate Easter Negg", "Orange Lightmite Lollypop", "Strawberries and Cream Easter Negg", "Marshmallow Plumpy", "Choco Spray", "Chococherry Blumaroo Ears", "Chocolate Gum", "Chocolate Lipstick", "Chocolate Peanuts With Peas", "Chocoon", "Creamy Chocolate Pie", "Crunchy Chocolate Grarrl", "Fishy Delight Grarrl Gobstopper", "Chocolate Crown of Sinsi"],
+    "blue");
+
+    //    Add one or more words to the dictionary with a specified class
+
+    function defwords(words, which_class) {
+    for (var i = 0; i < words.length; i++) {
+        var w = words[i].replace(/^=/, "");
+        patterns.push(new RegExp("([^a-zA-Z])(" + w + ")([^a-zA-Z])",
+        words[i].match(/^=/) ? "g" : "gi"));
+        classes.push(which_class);
+    }
+    }
+
+    //    Quote HTML metacharacters in body text
+
+    function quoteHTML(s) {
+    s = s.replace(/&/g, "&amp;");
+    s = s.replace(/</g, "&lt;");
+    s = s.replace(/>/g, "&gt;");
+    return s;
+    }
+
+    //    Add one or more CSS style rules to the document
+
+    function addGlobalStyle(css) {
+    var head, style;
+    head = document.getElementsByTagName('head')[0];
+    if (!head) {
+        return;
+    }
+    style = document.createElement('style');
+    style.type = 'text/css';
+    style.innerHTML = css;
+    head.appendChild(style);
+    }
+
+    //    Apply highlighting replacements to a text sequence
+
+    var curpat;             // Hidden argument to repmatch()
+    var changes;            // Number of changes made by repmatch()
+
+    function repmatch(matched, before, word, after) {
+    changes++;
+    return before + '<span class="' + classes[curpat] + '">' + word + '</span>' + after;
+    }
+
+    function highlight(s) {
+    s = " " + s;
+    for (curpat = 0; curpat < patterns.length; curpat++) {
+        s = s.replace(patterns[curpat],
+            repmatch);
+    }
+    return s.substring(1);
+    }
+
+    //    We only modify HTML/XHTML documents
+    if (document.contentType &&
+        (!(document.contentType.match(/html/i)))) {
+        return;
+    }
+
+    // Highlight words in body copy
+
+    var textnodes = document.evaluate("//body//text()", document, null,
+        XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null);
+
+    for (var i = 0; i < textnodes.snapshotLength; i++) {
+    var node = textnodes.snapshotItem(i);
+    /* Test whether this text node appears within a
+       <style>, <script>, or <textarea> container.
+       If so, it is not actual body text and must
+       be left alone to avoid wrecking the page. */
+    if (node.parentNode.tagName != "STYLE" &&
+        node.parentNode.tagName != "TEXTAREA" &&
+        node.parentNode.tagName != "SCRIPT") {
+        /* Many documents have large numbers of empty text nodes.
+           By testing for them, we avoid running all of our
+           regular expressions over a target which they can't
+           possibly match. */
+        if (!(node.data.match(/^\s*$/))) {
+        var s = " " + node.data + " ";
+        changes = 0;
+        var d = highlight(quoteHTML(s));
+        if (changes > 0) {
+            var rep = document.createElement("span");
+            rep.innerHTML = d.substring(1, d.length - 1);
+            node.parentNode.replaceChild(rep, node);
+        }
+        }
+    }
+    }
+
+})();
